@@ -120,6 +120,24 @@ class Task_manager:
         except (FileNotFoundError, json.JSONDecodeError):
             return f"{Fore.RED}Task not Found"
 
+def get_required_value(prompt, error_message, validation_func=None):
+    while True:
+        value = input(prompt)
+        if not value.strip():
+            print(f"{Fore.RED}{error_message}")
+            continue
+        if validation_func and not validation_func(value):
+            print(f"{Fore.RED}{error_message}")
+            continue
+        return value
+    
+def is_valid_date(date_str):
+    try:
+        datetime.strptime(date_str, "%Y-%m-%d")
+        return True
+    except ValueError:
+        return False
+
 def main():
     manager = Task_manager()
 
@@ -135,14 +153,18 @@ def main():
         choice = input(f"{Fore.CYAN}Enter your choice (1–6): ")
 
         if choice == "1":
-            name = input("Task Name: ")
-            category = input("Category: ")
+            # name = input("Task Name: ")
+            name = get_required_value(f"{Fore.CYAN}Task Name: ", "Task name is required.")
+            # category = input("Category: ")
+            category = get_required_value(f"{Fore.CYAN}Category: ", "Category is required.")
             try:
-                priority = int(input("Priority (1–5): "))
+                # priority = int(input("Priority (1–5): "))
+                priority = int(get_required_value(f"{Fore.CYAN}Priority (1–5): ", "Priority must be a number and between 1 to 5.", lambda x: x.isdigit() and 1 <= int(x) <= 5))
             except ValueError:
                 print(f"{Fore.RED}❌ Priority must be a number.")
                 continue
-            due_date = input("Due Date (YYYY-MM-DD): ")
+            # due_date = input("Due Date (YYYY-MM-DD): ")
+            due_date = get_required_value(f"{Fore.CYAN}Due Date (YYYY-MM-DD): ", "Due date is required in valid format.", lambda x: x.strip() and len(x) == 10 and x[4] == '-' and x[7] == '-' and x[:4].isdigit() and x[5:7].isdigit() and  x[8:].isdigit() and is_valid_date(x))
             description = input("Description (optional): ")
             manager.add_task(name, category, priority, due_date, description)
             print(f"{Fore.GREEN}✅ Task added successfully.")
